@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {include="includes"}
+</head>
+<body>
+  {include="page.header"}
+  <input type="hidden" name="token" value="{$token}">
+  <div id="search-linklist" class="searchform-block search-linklist">
+	<form method="GET" class="pure-form searchform" name="searchform">
+	  <input type="text" tabindex="1" name="searchterm" class="searchterm" placeholder="{'Search text'|t}"
+	  {if="!empty($search_term)"}
+	  value="{$search_term}"
+	  {/if}
+	  >
+	  <input type="text" tabindex="2" name="searchtags" class="searchtags" placeholder="{'Filter by tag'|t}"
+	  {if="!empty($search_tags)"}
+	  value="{$search_tags}"
+	  {/if}
+	  autocomplete="off" data-multiple data-autofirst data-minChars="1"
+	  data-list="{loop="$tags"}{$key}, {/loop}"
+	  >
+	  <button type="submit" class="search-button"><i class="fa fa-search"></i></button>
+	</form>
+  </div>
+  {loop="$plugins_header.fields_toolbar"}
+  <form
+  {loop="$value.attr"}
+  {$key}="{$value}"
+  {/loop}>
+  <div class="toolbar-plugin pure-u-lg-1">
+	{loop="$value.inputs"}
+	<input
+	{loop="$value"}
+	{$key}="{$value}"
+	{/loop}>
+	{/loop}
+  </div>
+</form>
+{/loop}
+<!-- linklist -->
+<div id="linklist">
+	<!-- Debut de la 1ere ligne -->
+	<div id="link-count-block" class="pure-g">
+		<!-- 2/24 écart page -->
+		<div class="pure-u-lg-2-24 pure-u-1-24"></div>
+		<!-- FIN 2/24 écart page -->
+
+		<!-- 20/24 content les filtres /link par page -->
+		<div id="link-count-content" class="pure-u-lg-20-24 pure-u-22-24">
+			<div class="linkcount pure-u-lg-0 center">
+				{if="!empty($linkcount)"}
+					<span class="strong">{$linkcount}</span> {function="t('shaare', 'shaares', $linkcount)"}
+					{if="$privateLinkcount>0"}
+						&middot; <span class="strong">{$privateLinkcount}</span> {function="t('private link', 'private links', $privateLinkcount)"}
+					{/if}
+				{/if}
+			</div>
+			{include="linklist.paging"}
+			<div id="plugin_zone_start_linklist" class="plugin_zone">
+				{loop="$plugin_start_zone"}
+					{$value}
+				{/loop}
+			</div>
+		</div>
+		<!-- 20/24 content les filtres /link par page -->
+		<!-- 2/24 écart page -->
+		<div class="pure-u-lg-2-24 pure-u-1-24"></div>
+		<!-- FIN 2/24 écart page -->
+	</div>
+	<!-- FIN de la 1ere ligne -->
+
+	<!-- Bandeaux infos -->
+	<!-- Pas de link -->
+	{if="count($links)==0"}
+	<div id="search-result-block" class="pure-g pure-alert pure-alert-error search-result">
+		<div class="pure-u-2-24"></div>
+		<div id="search-result-content" class="pure-u-20-24">
+			<div id="searchcriteria">{'Nothing found.'|t}</div>
+		</div>
+	</div>
+	<!-- FIN Pas de link -->
+
+	<!-- tag/recherche -->
+	{elseif="!empty($search_term) or $search_tags !== '' or !empty($visibility) or $untaggedonly"}
+	<div id="search-result-block" class="pure-g pure-alert pure-alert-success search-result">
+		<div class="pure-u-2-24"></div>
+		<div id="search-result-content" class="pure-u-20-24 search-result-main">
+			{function="sprintf(t('%s result', '%s results', $result_count), $result_count)"}
+			{if="!empty($search_term)"}
+				{'for'|t} <em><strong>{$search_term}</strong></em>
+			{/if}
+			{if="!empty($search_tags)"}
+				{$exploded_tags=explode(' ', $search_tags)}
+				{'tagged'|t}
+				{loop="$exploded_tags"}
+					<span class="label label-tag" title="{'Remove tag'|t}">
+						<a href="?removetag={function="urlencode($value)"}">{$value}<span class="remove"><i class="fa fa-times"></i></span></a>
+					</span>
+				{/loop}
+			{/if}
+			{if="!empty($visibility)"}
+				{'with status'|t}
+				<span class="label label-private">
+					{$visibility|t}
+				</span>
+			{/if}
+			{if="$untaggedonly"}
+				<span class="label label-private">
+					{'without any tag'|t}
+				</span>
+			{/if}
+		</div>
+	</div>
+	{/if}
+	<!-- FIN tag/recherche -->
+	<!-- FIN Bandeaux infos -->
+
+	<!-- Debut de la 2ere ligne / Block avec les 2 colonnes -->
+	<div id="linklist-loop-block" class="pure-g">
+
+		<!-- 2/24 écart page -->
+		<div class="pure-u-lg-2-24 pure-u-1-24"></div>
+		<!-- FIN 2/24 écart page -->
+
+		<!-- 1ere colonne : tous les shaarlinks -->
+		<div id="linklist-loop-content" class="pure-u-lg-15-24 pure-u-22-24">
+
+		{ignore}Set translation here, for performances{/ignore}
+		{$strPrivate=t('Private')}
+		{$strEdit=t('Edit')}
+		{$strDelete=t('Delete')}
+		{$strFold=t('Fold')}
+		{$strEdited=t('Edited: ')}
+		{$strPermalink=t('Permalink')}
+		{$strPermalinkLc=t('permalink')}
+		{$strAddTag=t('Add tag')}
+		{ignore}End of translations{/ignore}
+		{loop="links"}
+			<div class="anchor" id="{$value.shorturl}"></div>
+			<div class="linklist-item linklist-item{if="$value.class"} {$value.class}{/if}" data-id="{$value.id}" >
+
+				<!--link-header-->
+				<div class="link-header">
+					{if="$is_logged_in"}
+						<div class="linklist-item-editbuttons">
+							{if="$value.private"}
+								<span class="label label-private">{$strPrivate}</span>
+							{/if}
+						</div>
+					{/if}
+					<div class="linklist-item-title pure-g">
+						<div class="pure-u-3-5 card-title">
+							<h2><a href="{$value.real_url}">
+								{if="strpos($value.url, $value.shorturl) === false"}
+									<i class="fa fa-external-link-alt"></i>
+								{else}
+									<i class="fa fa-sticky-note"></i>
+								{/if}
+									<span class="linklist-link">{$value.title}</span>
+							</a></h2>
+						</div>
+						<div class="pure-u-2-5">
+							<div class="link-date pure-g" style="width:100%;">
+								<div class="pure-u-11-12">
+									<a href="?{$value.shorturl}" title="{$strPermalink}">
+										{if="!$hide_timestamps || $is_logged_in"}
+										{$updated=$value.updated_timestamp ? $strEdited. format_date($value.updated) : $strPermalink}
+										<span class="linkdate" title="{$updated}">
+											<i class="fa fa-clock-o"></i>
+											{$value.created|format_date}
+											{if="$value.updated_timestamp"}*{/if}
+											&middot;
+										</span>
+										{/if}
+										{$strPermalinkLc}
+									</a>
+
+									<div class="linklist-item-infos-url">
+										<a href="{$value.real_url}" title="{$value.title}">
+											<i class="fa fa-link"></i> {$value.url}
+										</a>
+									</div>
+								</div>
+								<div class="pure-u-1-12">
+									<div class="linklist-item-buttons pure-u-0 pure-u-lg-visible">
+										<a href="#" title="{$strFold}" class="fold-button"><i class="fa fa-chevron-up"></i></a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!--fin link-header-->
+
+				<!--link-content-->
+				{if="($thumbnails_enabled && !empty($value.thumbnail))|| !empty($value.description)"}
+				<div class="link-content">
+                    {if="($thumbnails_enabled && !empty($value.thumbnail)) ||$value.description"}
+                    <div class="linklist-item-description">
+					    {if="$thumbnails_enabled && !empty($value.thumbnail)"}
+						    <div class="linklist-item-thumbnail" style="width:{$thumbnails_width}px;height:{$thumbnails_height}px;">
+							    <div class="thumbnail">
+								    <a href="{$value.real_url}">
+									    {ignore}RainTPL hack: put the 2 src on two different line to avoid path replace bug{/ignore}
+									    <img data-src="{$value.thumbnail}#" class="b-lazy" src="#" alt="thumbnail" width="{$thumbnails_width}" height="{$thumbnails_height}" />
+								    </a>
+							    </div>
+						    </div>
+						    {/if}
+						    {if="$value.description"}
+
+							    {$value.description}
+
+					        {/if}
+						    </div>
+                     {/if}
+				</div>
+				{/if}
+				<!--FIN link-content-->
+
+				<!--link-footer-->
+				<div class="link-footer">
+					<div class="linklist-item-infos pure-g clear">
+						{if="$value.tags"}
+						<div class="linklist-item-tags link-tag-list pure-u-4-5">
+								<i class="fa fa-tags"></i>
+								{$tag_counter=count($value.taglist)}
+								{loop="value.taglist"}
+									<span class="label link-tag label-tag" title="{$strAddTag}">
+										<a href="?addtag={$value|urlencode}">{$value}</a>
+									</span>
+									{if="$tag_counter - 1 != $counter"}&middot;{/if}
+								{/loop}
+						</div>
+						{/if}
+						<div class="linklist-item-infos-date-url-block pure-u-1-5">
+							<div class="linklist-item-infos-dateblock">
+								{if="$is_logged_in"}
+								<div class="linklist-item-infos-controls-group pure-u-0 pure-u-lg-visible">
+									<span class="linklist-item-infos-controls-item ctrl-checkbox">
+										<input type="checkbox" class="delete-checkbox" value="{$value.id}">
+									</span>
+									<span class="linklist-item-infos-controls-item ctrl-edit">
+										<a href="?edit_link={$value.id}" title="{$strEdit}"><i class="fa fa-pencil-square-o edit-link"></i></a>
+									</span>
+									<span class="linklist-item-infos-controls-item ctrl-delete">
+										<a href="?delete_link&amp;lf_linkdate={$value.id}&amp;token={$token}" title="{$strDelete}" class="delete-link pure-u-0 pure-u-lg-visible confirm-delete">
+										<i class="fa fa-trash"></i>
+									</a>
+									</span>
+								</div>
+								{/if}
+								<div class="pure-u-0 pure-u-lg-visible">
+									{if="isset($value.link_plugin)"}
+										&middot;
+										{$link_plugin_counter=count($value.link_plugin)}
+										{loop="$value.link_plugin"}
+											{$value}
+											{if="$link_plugin_counter - 1 != $counter"}&middot;{/if}
+										{/loop}
+									{/if}
+								</div>
+							</div>
+							<div class="mobile-buttons pure-u-1 pure-u-lg-0">
+								{if="isset($value.link_plugin)"}
+									{$link_plugin_counter=count($value.link_plugin)}
+									{loop="$value.link_plugin"}
+										{$value}
+										{if="$link_plugin_counter - 1 != $counter"}&middot;{/if}
+									{/loop}
+								{/if}
+								{if="$is_logged_in"}
+									&middot;
+									<a href="?delete_link&amp;lf_linkdate={$value.id}&amp;token={$token}" title="{$strDelete}" class="delete-link confirm-delete">
+										<i class="fa fa-trash"></i>
+									</a>
+									&middot;
+									<a href="?edit_link={$value.id}" title="{$strEdit}"><i class="fa fa-pencil-square-o edit-link"></i></a>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
+				<!--FIN link-footer-->
+			</div>
+		{/loop}
+		</div>
+		<!-- FIN colonne : tous les shaarlinks -->
+
+		<!--12/24 écart page -->
+		<div class="pure-u-lg-1-24"></div>
+		<!-- FIN 1/24 écart page -->
+
+
+		<!-- Colonne 4/24 content / 22/24 en mobile -->
+		<div class="pure-u-lg-4-24 pure-u-22-24">
+			<div class="linklist-item publicLinkHightLigh">
+				<div class="link-header tag-col-title">
+					<h2>
+						<i class="fa fa-tags"></i>
+						<span class="linklist-link">Tags/ Shortcuts</span>
+					</h2>
+				</div>
+				<div class="link-content">
+					<div class="cloudtag-container">
+						<span style="display:none;">{function="ksort($tags)"} 	</span>
+						<!-- utilisation de fonction php de tri de tableaux -->
+
+						{loop="$tags"}
+						{$fontsize="0.9"}
+						{$color="#C7C7BD"}
+
+                        <!-- https://meyerweb.com/eric/tools/color-blend/#2C3721:6BB604:3:hex -->
+
+						{if="($value)>30"} {$fontsize="2.8"} {$color="#2C3721"}
+							{elseif="($value)>20"} {$fontsize="2.4"} {$color="#3C571A"}
+								{elseif="($value)>18"} {$fontsize="2"} {$color="#4C7713"}
+									{elseif="($value)>16"} {$fontsize="1.7"} {$color="#5B960B"}
+									    {elseif="($value)>13"} {$fontsize="1.7"} {$color="#6BB604"}
+										    {elseif="($value)>10"} {$fontsize="1.4"} {$color="#83B53A"}
+                                                {elseif="($value)>7"} {$fontsize="1.2"} {$color="#9BB470"}
+										    	    {elseif="($value)>4"} {$fontsize="1.2"} {$color="#B3B3A6"}
+                                                       {elseif="($value)>2"} {$fontsize="1.2"} {$color="#C7C7BD"}
+						{/if}
+
+						<span style="color:{$color};">
+							{$value} <a href="?searchtags={$key|urlencode}"  style="font-size:{$fontsize}em; color:{$color};">{$key}</a>
+						</span>
+						&middot;
+						{/loop}
+
+
+					</div>
+				</div>
+				<div class="link-footer">
+					foot
+				</div>
+			</div>
+		</div>
+		<!-- FIN Colonne 4/24 content / 22/24 en mobile -->
+
+		<!-- 1/24 écart page -->
+		<div class="pure-u-lg-2-24 pure-u-1-24"></div>
+		<!-- FIN 1/24 écart page -->
+
+	</div>
+	<!-- FIN de la 2ere ligne / Block avec les 2 colonnes -->
+
+</div>
+<!-- FIN linklist -->
+
+
+<div id="plugin_zone_end_linklist" class="plugin_zone">
+	{loop="$plugin_end_zone"}
+		{$value}
+	{/loop}
+</div>
+<div id="linklist-paging-bottom-block" class="pure-g">
+	<div class="pure-u-lg-2-24 pure-u-1-24"></div>
+	<div id="linklist-paging-bottom-content" class="pure-u-lg-20-24 pure-u-22-24">
+		{include="linklist.paging"}
+	</div>
+	<div class="pure-u-lg-2-24 pure-u-1-24"></div>
+</div>
+{include="page.footer"}
+<script src="js/thumbnails.min.js?v={$version_hash}"></script>
+
+</body>
+</html>

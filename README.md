@@ -1,4 +1,19 @@
-![Shaarli logo](doc/md/images/doc-logo.png)
+- [Original Project](https://github.com/shaarli/Shaarli)
+- [Added modification from MyFrama](https://framacloud.org/fr/cultiver-son-jardin/shaarli.html)
+- [New Theme : yggz-Theme](https://github.com/Kourai/Shaarli/tree/master/tpl/yggz-shaarli-theme)
+- [New Theme : cook-Theme](https://github.com/Kourai/Shaarli/tree/master/tpl/yggz-cook-theme) - I don't recommand using this theme as the tags displayed on the left depend on the tag name itself ("S:..." , "T:...")
+
+This theme scss was generated thanks to [css 2 sass/scss converter](https://css2sass.herokuapp.com/).
+
+It used google fonts, chosen via [fontjoy](https://fontjoy.com/).
+
+New icons come from [icons8](https://icons8.com/icon/set/star/dotty).
+
+I also used this [Color Blender](https://meyerweb.com/eric/tools/color-blend/#6BB604:B3B3A6:1:hex) to get gradient colors.
+
+-----
+
+![](https://shaarli.yggz.org/doc/md/images/doc-logo.png)
 
 The personal, minimalist, super-fast, database free, bookmarking service.
 

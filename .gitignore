@@ -38,6 +38,8 @@ doc/phpdoc/
 tpl/*
 !tpl/default
 !tpl/vintage
+!tpl/yggz-cook-theme
+!tpl/yggz-shaarli-theme
 
 # Front end
 node_modules
